@@ -20,5 +20,6 @@ jobs:
         command: |
           cd /root/sakurate/front &&
           git pull origin main &&
+          npm run build &&
           cp ./dist/* /var/www/your-site/ -r &&
           sudo systemctl reload nginx

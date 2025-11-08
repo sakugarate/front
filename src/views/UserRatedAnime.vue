@@ -2,7 +2,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getTokenFromCookies, getUserIdFromCookies, hostUrl } from '../composables/getToken'
-import { getRatingColorFromStr } from '../composables/buttonColors';
+import { getRatingColorFromStr, colors } from '../composables/buttonColors'; // импортируем colors
 
 interface RatedAnime {
   id: number
@@ -23,6 +23,12 @@ interface ApiResponse {
   data: RatedAnime[]
 }
 
+// === Новая структура для total ===
+interface AnimeTotalRate {
+  rate_category: string
+  quantity: number
+}
+
 const route = useRoute()
 const router = useRouter()
 const userId = route.params.userId as string
@@ -38,8 +44,33 @@ const currentPage = ref(1)
 const itemsPerPage = 20
 const totalPages = computed(() => Math.ceil(pagination.value.total / itemsPerPage))
 
-// Состояние сортировки: 'rating' | 'alphabet' | null
+// Состояние сортировки
 const sortMode = ref<'rating' | 'alphabet' | null>(null)
+
+// === Total Rates по аниме ===
+const totalAnimeRates = ref<AnimeTotalRate[]>([])
+const totalAnimeRatesLoading = ref(true)
+const totalAnimeRatesError = ref<string | null>(null)
+
+const loadTotalAnimeRates = async () => {
+  totalAnimeRatesLoading.value = true
+  totalAnimeRatesError.value = null
+  try {
+    const url = `${hostUrl}/api/v1/anime/${userId}/total/`
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': getTokenFromCookies()
+      }
+    })
+    if (!response.ok) throw new Error('Error loading anime category totals')
+    totalAnimeRates.value = await response.json()
+  } catch (err) {
+    totalAnimeRatesError.value = err instanceof Error ? err.message : 'Ошибка загрузки статистики'
+  } finally {
+    totalAnimeRatesLoading.value = false
+  }
+}
 
 onMounted(async () => {
   const currentUserId = getUserIdFromCookies()
@@ -56,13 +87,14 @@ onMounted(async () => {
     } catch {}
   }
 
-  await loadUserAnime(1)
+  await Promise.all([loadUserAnime(1), loadTotalAnimeRates()])
 })
 
 // Сброс страницы при смене сортировки
 watch(sortMode, () => {
   currentPage.value = 1
   loadUserAnime(1)
+  loadTotalAnimeRates() // обновляем статистику при сортировке (на всякий случай)
 })
 
 const loadUserAnime = async (page: number = 1) => {
@@ -73,7 +105,6 @@ const loadUserAnime = async (page: number = 1) => {
     const offset = (page - 1) * itemsPerPage
     let url = `${hostUrl}/api/v1/anime/${userId}/?limit=${itemsPerPage}&offset=${offset}`
 
-    // Добавляем нужный orders
     if (sortMode.value === 'rating') {
       url += `&orders=${encodeURIComponent('{"rating": false}')}`
     } else if (sortMode.value === 'alphabet') {
@@ -134,7 +165,6 @@ const goToPage = (page: number) => {
   loadUserAnime(page)
 }
 
-// Кнопки сортировки
 const sortByRating = () => {
   sortMode.value = 'rating'
 }
@@ -174,6 +204,31 @@ const sortByAlphabet = () => {
         </button>
       </div>
 
+      <!-- Total Anime Rate Categories -->
+      <div class="total-rates-row">
+        <template v-if="totalAnimeRatesLoading">Загрузка категорий...</template>
+        <template v-else-if="totalAnimeRatesError">
+          <span class="error">{{ totalAnimeRatesError }}</span>
+        </template>
+        <template v-else-if="totalAnimeRates.length === 0">
+          <span class="empty">Нет статистики по категориям</span>
+        </template>
+        <template v-else>
+          <div
+            class="rate-category-chip"
+            v-for="item in totalAnimeRates"
+            :key="item.rate_category"
+          >
+            <span
+              class="dot"
+              :style="{ backgroundColor: colors[item.rate_category] || '#ccc' }"
+            ></span>
+            <span class="rate-name">{{ item.rate_category }}</span>
+            <span class="rate-quantity">({{ item.quantity }})</span>
+          </div>
+        </template>
+      </div>
+
       <!-- Статусы -->
       <div v-if="isLoading" class="loading">Загрузка...</div>
       <div v-else-if="error" class="error">{{ error }}</div>
@@ -192,7 +247,6 @@ const sortByAlphabet = () => {
           <h3>{{ anime.title }}</h3>
           <p><strong>Rated episodes:</strong> {{ anime.rated_episodes_quantity }}</p>
           
-          <!-- User Rating с цветной точкой -->
           <p class="rating-line">
             <strong>Personal rating:</strong> {{ anime.user_avg_score }}
             <span
@@ -201,7 +255,6 @@ const sortByAlphabet = () => {
             ></span>
           </p>
           
-          <!-- Community Rating с цветной точкой -->
           <p class="rating-line">
             <strong>Community rating:</strong> {{ anime.avg_community_rating }}
             <span
@@ -263,6 +316,45 @@ const sortByAlphabet = () => {
 </template>
 
 <style scoped>
+/* === Стили для total-rates-row (взято из EpisodeRatings) === */
+.total-rates-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 18px;
+  min-height: 34px;
+  padding-left: 4px;
+}
+.rate-category-chip {
+  display: flex;
+  align-items: center;
+  background: #f6fafd;
+  border-radius: 16px;
+  padding: 3px 10px 3px 6px;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 7px;
+  background: #aaa;
+  display: inline-block;
+  box-shadow: 0 0 2px #ccc;
+}
+.rate-name {
+  font-weight: 500;
+  text-transform: capitalize;
+  margin-right: 5px;
+}
+.rate-quantity {
+  color: #6b7280;
+  font-size: 0.9em;
+}
+
+/* Остальные стили без изменений */
 .user-rated-page {
   min-height: 100vh;
   background: linear-gradient(-45deg, #F8E8F2, #E6F0FA, #F0E6F5, #E0F8F0);
@@ -306,7 +398,6 @@ h1 {
   background: #45a049;
 }
 
-/* Кнопки сортировки */
 .sort-buttons {
   display: flex;
   gap: 12px;
@@ -382,7 +473,6 @@ h1 {
   color: #213547;
 }
 
-/* Стили для строк с рейтингом и точкой */
 .rating-line {
   display: flex;
   align-items: center;
@@ -406,7 +496,6 @@ h1 {
   flex-shrink: 0;
 }
 
-/* Пагинация */
 .pagination {
   display: flex;
   justify-content: center;

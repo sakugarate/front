@@ -24,6 +24,7 @@ interface Episode {
 interface EpisodeRating {
   episode: Episode
   rates: Rate[]
+  rating: string
 }
 
 const episodes = ref<EpisodeRating[]>([])
@@ -120,7 +121,6 @@ const isModalOpen = ref(false)
 const selectedEpisode = ref<Episode | null>(null)
 
 const openRatingModal = (episode: Episode) => {
-  console.log('Opening modal for episode:', episode) // отладка
   selectedEpisode.value = episode
   isModalOpen.value = true
 }
@@ -221,11 +221,16 @@ watch(sortMode, () => {
                 class="avg-rate"
                 :style="{ '--avg-rate-color': getAvgRateInfo(item.episode.user_avg_rate).color }"
               >
-                <strong>Avg. Rate:</strong>
+              <div class="episode-rating">
+              <strong>Rating: </strong>
+              <span class="rating-value">{{ item.rating }}</span>
+            </div>
+                <strong>Avg. score:</strong>
                 <span class="avg-rate-value">
                   {{ getAvgRateInfo(item.episode.user_avg_rate).full }}
                 </span>
               </div>
+              
             </div>
             <div class="criteria-grid">
               <div

@@ -245,8 +245,10 @@ const sortByAlphabet = () => {
           @click="goToAnimeDetails(anime.id)"
         >
           <h3>{{ anime.title }}</h3>
-          <p><strong>Rated episodes:</strong> {{ anime.rated_episodes_quantity }}</p>
-          
+          <p class="rating-line" v-if="anime.rated_episodes_quantity > 1">
+            <strong>Rated episodes:</strong>{{ anime.rated_episodes_quantity }}
+          </p>
+            
           <p class="rating-line">
             <strong>Personal rating:</strong> {{ anime.user_avg_score }}
             <span

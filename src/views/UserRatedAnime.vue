@@ -40,9 +40,9 @@ const error = ref<string | null>(null)
 const isOwnProfile = ref(false)
 const canGoBack = ref(true)
 
-const pagination = ref<ApiResponse['pagination']>({ limit: 10, total: 0, offset: 0 })
+const itemsPerPage = 30
+const pagination = ref<ApiResponse['pagination']>({ limit: itemsPerPage, total: 0, offset: 0 })
 const currentPage = ref(1)
-const itemsPerPage = 10
 const totalPages = computed(() => Math.ceil(pagination.value.total / itemsPerPage))
 
 // Состояние сортировки

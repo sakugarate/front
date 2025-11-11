@@ -76,13 +76,13 @@ const handleBlur = (): void => {
 .search-box {
   display: flex;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--bg-card);
   border-radius: 50px;
   padding: 8px 8px 8px 24px;
-  border: 2px solid rgba(0, 0, 0, 0.1);
+  border: 2px solid var(--border-color);
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px var(--shadow);
   width: 160%;
   margin-left: -80px; 
 }
@@ -97,13 +97,13 @@ const handleBlur = (): void => {
   background: transparent;
   border: none;
   outline: none;
-  color: #213547;
+  color: var(--text-primary);
   font-size: 1.1rem;
   padding: 12px 0;
 }
 
 .search-input::placeholder {
-  color: rgba(33, 53, 71, 0.5);
+  color: var(--text-secondary);
 }
 
 .search-button {

@@ -193,7 +193,7 @@ const handleClose = (): void => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--overlay);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -205,7 +205,7 @@ const handleClose = (): void => {
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .rating-panel {
-  background: linear-gradient(-45deg, #F8E8F2, #E6F0FA, #F0E6F5, #E0F0F8);
+  background: var(--bg-primary);
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
   border-radius: 24px;
@@ -214,7 +214,7 @@ const handleClose = (): void => {
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px var(--shadow);
   position: relative;
 }
 @keyframes gradientShift {
@@ -229,20 +229,20 @@ const handleClose = (): void => {
   justify-content: space-between;
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+  border-bottom: 2px solid var(--border-color);
 }
-.panel-header h2 { margin: 0; font-size: 1.75rem; font-weight: 600; color: #213547; flex: 1; }
-.episode-title { margin: 8px 0 0 0; font-size: 0.95rem; color: #666; font-weight: normal; }
+.panel-header h2 { margin: 0; font-size: 1.75rem; font-weight: 600; color: var(--text-primary); flex: 1; }
+.episode-title { margin: 8px 0 0 0; font-size: 0.95rem; color: var(--text-secondary); font-weight: normal; }
 
 .close-button {
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--bg-card);
   border: none;
   border-radius: 50%;
   width: 36px;
   height: 36px;
   font-size: 24px;
   line-height: 1;
-  color: #213547;
+  color: var(--text-primary);
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
@@ -250,7 +250,7 @@ const handleClose = (): void => {
   justify-content: center;
   flex-shrink: 0;
 }
-.close-button:hover { background: rgba(255, 255, 255, 1); transform: rotate(90deg); }
+.close-button:hover { background: var(--bg-secondary); transform: rotate(90deg); }
 
 .rating-content { margin-bottom: 24px; }
 .rating-item { margin-bottom: 32px; }
@@ -264,7 +264,7 @@ const handleClose = (): void => {
 }
 .criterion-label {
   font-weight: 600;
-  color: #213547;
+  color: var(--text-primary);
   font-size: 1.1rem;
 }
 .remove-criterion {
@@ -294,7 +294,7 @@ const handleClose = (): void => {
   width: 100%;
   height: 8px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--bg-card);
   outline: none;
   -webkit-appearance: none;
   appearance: none;
@@ -320,7 +320,7 @@ const handleClose = (): void => {
   transition: all 0.3s ease;
 }
 .slider::-moz-range-thumb:hover { transform: scale(1.2); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); }
-.slider::-moz-range-track { height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.5); }
+.slider::-moz-range-track { height: 8px; border-radius: 4px; background: var(--bg-card); }
 
 .slider-labels { display: flex; justify-content: space-between; gap: 8px; }
 .slider-label {
@@ -329,18 +329,18 @@ const handleClose = (): void => {
   padding: 8px 4px;
   border-radius: 8px;
   font-size: 0.75rem;
-  color: #666;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--bg-card);
   text-transform: capitalize;
 }
-.slider-label:hover { background: rgba(255, 255, 255, 0.5); transform: translateY(-2px); }
+.slider-label:hover { background: var(--bg-secondary); transform: translateY(-2px); }
 .slider-label.active {
-  background: rgba(255, 255, 255, 0.9);
-  color: #213547;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--shadow);
 }
 
 /* ----------------- Футер ----------------- */
@@ -360,8 +360,8 @@ const handleClose = (): void => {
   transition: all 0.3s ease;
   border: none;
 }
-.cancel-button { background: rgba(255, 255, 255, 0.8); color: #213547; }
-.cancel-button:hover { background: rgba(255, 255, 255, 1); transform: translateY(-2px); }
+.cancel-button { background: var(--bg-card); color: var(--text-primary); }
+.cancel-button:hover { background: var(--bg-secondary); transform: translateY(-2px); }
 .rate-button { background: #646cff; color: white; }
 .rate-button:hover {
   background: #535bf2;

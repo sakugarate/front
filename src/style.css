@@ -3,14 +3,32 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Light theme colors */
+  --bg-primary: linear-gradient(-45deg, #F8E8F2, #E6F0FA, #F0E6F5, #E0F0F8);
+  --bg-secondary: rgba(255, 255, 255, 0.9);
+  --bg-card: rgba(255, 255, 255, 0.8);
+  --text-primary: #213547;
+  --text-secondary: #666;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --shadow: rgba(0, 0, 0, 0.1);
+  --overlay: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] {
+  /* Dark theme colors */
+  --bg-primary: linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #0a1929);
+  --bg-secondary: rgba(50, 50, 60, 0.95);
+  --bg-card: rgba(60, 60, 70, 0.9);
+  --text-primary: #d0d0d0;
+  --text-secondary: #a0a0a0;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --shadow: rgba(0, 0, 0, 0.5);
+  --overlay: rgba(0, 0, 0, 0.8);
 }
 
 a {
@@ -38,9 +56,11 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: linear-gradient(-45deg, #F8E8F2, #E6F0FA, #F0E6F5, #E0F0F8);
+  background: var(--bg-primary);
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
+  color: var(--text-primary);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 h1 {

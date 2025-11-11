@@ -265,7 +265,7 @@ const handleBack = (): void => {
 
 .episode-select-page {
   min-height: 100vh;
-  background: linear-gradient(-45deg, #F8E8F2, #E6F0FA, #F0E6F5, #E0F0F8);
+  background: var(--bg-primary);
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
   padding: 20px;
@@ -314,17 +314,17 @@ const handleBack = (): void => {
 }
 
 .content {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--bg-secondary);
   border-radius: 24px;
   padding: 32px;
   backdrop-filter: blur(10px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px var(--shadow);
 }
 
 .anime-title {
   font-size: 2.5rem;
   font-weight: 600;
-  color: #213547;
+  color: var(--text-primary);
   margin-bottom: 32px;
   text-align: center;
 }
@@ -343,8 +343,8 @@ const handleBack = (): void => {
 }
 
 .episode-card {
-  background: rgba(255, 255, 255, 0.8);
-  border: 2px solid rgba(0, 0, 0, 0.1);
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
   border-radius: 16px;
   padding: 20px;
   cursor: pointer;
@@ -371,7 +371,7 @@ const handleBack = (): void => {
 }
 
 .episode-title {
-  color: #213547;
+  color: var(--text-primary);
   font-size: 0.95rem;
   line-height: 1.4;
   margin-bottom: 8px;

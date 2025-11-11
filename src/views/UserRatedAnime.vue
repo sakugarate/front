@@ -328,11 +328,13 @@ const sortByAlphabet = () => {
 .rate-category-chip {
   display: flex;
   align-items: center;
-  background: #f6fafd;
+  background: var(--bg-card);
   border-radius: 16px;
   padding: 3px 10px 3px 6px;
   font-size: 1rem;
   margin-bottom: 4px;
+  opacity: 0.85;
+  filter: brightness(0.9);
 }
 .dot {
   width: 12px;
@@ -356,7 +358,7 @@ const sortByAlphabet = () => {
 /* Остальные стили без изменений */
 .user-rated-page {
   min-height: 100vh;
-  background: linear-gradient(-45deg, #F8E8F2, #E6F0FA, #F0E6F5, #E0F8F0);
+  background: var(--bg-primary);
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
   padding: 40px 20px;
@@ -378,7 +380,7 @@ const sortByAlphabet = () => {
 
 h1 {
   font-size: 2.2rem;
-  color: #213547;
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -405,8 +407,8 @@ h1 {
 }
 
 .sort-btn {
-  background: #f0f0f0;
-  color: #213547;
+  background: var(--bg-card);
+  color: var(--text-primary);
   border: 2px solid transparent;
   padding: 8px 16px;
   border-radius: 8px;
@@ -417,20 +419,20 @@ h1 {
 }
 
 .sort-btn:hover {
-  background: #e0e0e0;
+  background: var(--bg-secondary);
 }
 
 .sort-btn.active {
-  background: #213547;
-  color: white;
-  border-color: #213547;
+  background: var(--text-primary);
+  color: var(--bg-card);
+  border-color: var(--text-primary);
 }
 
 .loading, .error, .empty {
   text-align: center;
   padding: 40px;
   font-size: 1.2rem;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .error { color: #e74c3c; }
@@ -443,33 +445,33 @@ h1 {
 }
 
 .anime-card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px var(--shadow);
   transition: transform 0.2s, background 0.2s;
   cursor: pointer;
 }
 
 .anime-card:hover {
   transform: translateY(-6px);
-  background: #f8f9ff;
+  background: var(--bg-secondary);
 }
 
 .anime-card h3 {
   margin: 0 0 12px;
   font-size: 1.3rem;
-  color: #1a1a1a;
+  color: var(--text-primary);
 }
 
 .anime-card p {
   margin: 8px 0;
   font-size: 1rem;
-  color: #444;
+  color: var(--text-secondary);
 }
 
 .anime-card p strong {
-  color: #213547;
+  color: var(--text-primary);
 }
 
 .rating-line {
@@ -478,11 +480,11 @@ h1 {
   gap: 8px;
   margin: 8px 0;
   font-size: 1rem;
-  color: #444;
+  color: var(--text-secondary);
 }
 
 .rating-line strong {
-  color: #213547;
+  color: var(--text-primary);
   min-width: 140px;
   flex-shrink: 0;
 }
@@ -532,26 +534,26 @@ h1 {
 }
 
 .page-num {
-  background: #f0f0f0;
-  color: #213547;
+  background: var(--bg-card);
+  color: var(--text-primary);
   font-weight: 500;
 }
 
 .page-num.active {
-  background: #213547;
-  color: white;
+  background: var(--text-primary);
+  color: var(--bg-card);
   font-weight: 600;
 }
 
 .ellipsis {
-  color: #666;
+  color: var(--text-secondary);
   font-weight: 500;
   padding: 0 4px;
 }
 
 .pagination-info {
   text-align: center;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   margin-top: 1rem;
 }

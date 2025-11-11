@@ -65,8 +65,8 @@ const goToSearch = () => {
   position: fixed;
   top: 20px;
   left: 20px;
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
   border-radius: 50%;
   width: 48px;
   height: 48px;
@@ -74,16 +74,17 @@ const goToSearch = () => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px var(--shadow);
   z-index: 1001;
   transition: all 0.3s ease;
   backdrop-filter: blur(4px);
+  color: var(--text-primary);
 }
 
 .sidebar-toggle:hover {
-  background: white;
+  background: var(--bg-card);
   transform: scale(1.1);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 16px var(--shadow);
 }
 
 /* Панель — выезжает */
@@ -93,10 +94,10 @@ const goToSearch = () => {
   left: 0;
   width: 240px;
   height: 100vh;
-  background: rgba(255, 255, 255, 0.97);
+  background: var(--bg-secondary);
   backdrop-filter: blur(12px);
   padding-top: 80px;
-  box-shadow: 2px 0 15px rgba(0,0,0,0.1);
+  box-shadow: 2px 0 15px var(--shadow);
   transform: translateX(-100%);
   transition: transform 0.3s ease;
   z-index: 1000;
@@ -117,13 +118,13 @@ const goToSearch = () => {
   text-align: left;
   font-size: 1.1rem;
   font-weight: 500;
-  color: #213547;
+  color: var(--text-primary);
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .sidebar-item:hover {
-  background: rgba(81, 203, 238, 0.1);
+  background: var(--bg-card);
 }
 
 .sidebar-item .icon {
@@ -136,7 +137,7 @@ const goToSearch = () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--overlay);
   z-index: 999;
   backdrop-filter: blur(3px);
 }

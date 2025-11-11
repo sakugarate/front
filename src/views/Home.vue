@@ -78,9 +78,13 @@ const handleAnimeSelect = (animeId: number): void => {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: linear-gradient(-45deg, #F8E8F2, #E6F0FA, #F0E6F5, #E0F8F0);
+  background: var(--bg-primary);
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
+}
+
+.title {
+  color: var(--text-primary);
 }
 .search-wrapper {
   position: relative;

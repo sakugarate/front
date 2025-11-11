@@ -272,7 +272,7 @@ watch(sortMode, () => {
 .episode-ratings-page {
   padding: 24px 0;
   min-height: 100vh;
-  background: #f4f6f9;
+  background: var(--bg-primary);
 }
 .container {
   max-width: 900px;
@@ -288,7 +288,7 @@ watch(sortMode, () => {
   gap: 1rem;
 }
 h1 {
-  color: #213547;
+  color: var(--text-primary);
   margin: 0;
   font-size: 2rem;
 }
@@ -315,8 +315,8 @@ h1 {
   justify-content: center;
 }
 .sort-btn {
-  background: #f0f0f0;
-  color: #213547;
+  background: var(--bg-card);
+  color: var(--text-primary);
   border: 2px solid transparent;
   padding: 8px 16px;
   border-radius: 8px;
@@ -326,12 +326,12 @@ h1 {
   transition: all 0.2s;
 }
 .sort-btn:hover {
-  background: #e0e0e0;
+  background: var(--bg-secondary);
 }
 .sort-btn.active {
-  background: #213547;
-  color: white;
-  border-color: #213547;
+  background: var(--text-primary);
+  color: var(--bg-card);
+  border-color: var(--text-primary);
 }
 
 /* Total Rate Categories */
@@ -347,11 +347,13 @@ h1 {
 .rate-category-chip {
   display: flex;
   align-items: center;
-  background: #f6fafd;
+  background: var(--bg-card);
   border-radius: 16px;
   padding: 3px 10px 3px 6px;
   font-size: 1rem;
   margin-bottom: 4px;
+  opacity: 0.85;
+  filter: brightness(0.9);
 }
 .dot {
   width: 12px;
@@ -368,7 +370,7 @@ h1 {
   margin-right: 5px;
 }
 .rate-quantity {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-size: 0.9em;
 }
 
@@ -376,7 +378,7 @@ h1 {
   text-align: center;
   padding: 40px;
   font-size: 1.1rem;
-  color: #666;
+  color: var(--text-secondary);
 }
 .error {
   color: #ef4444;
@@ -388,11 +390,11 @@ h1 {
   gap: 24px;
 }
 .episode-card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 12px var(--shadow);
+  border: 1px solid var(--border-color);
   transition: all 0.2s ease;
   cursor: pointer;
 }
@@ -413,13 +415,13 @@ h1 {
 .episode-header h3 {
   margin: 0 0 8px;
   font-size: 1.4rem;
-  color: #1a1a1a;
+  color: var(--text-primary);
 }
 .avg-rate {
   font-size: 1.1rem;
-  color: #213547;
+  color: var(--text-primary);
   font-weight: 500;
-  background: #f0f9ff;
+  background: var(--bg-secondary);
   padding: 6px 12px;
   border-radius: 8px;
   display: inline-block;
@@ -428,7 +430,7 @@ h1 {
 .avg-rate-value {
   margin-left: 6px;
   font-weight: 600;
-  color: #213547;
+  color: var(--text-primary);
 }
 .criteria-grid {
   display: grid;
@@ -440,20 +442,20 @@ h1 {
   justify-content: space-between;
   align-items: center;
   padding: 10px 14px;
-  background: #f8f9fa;
+  background: var(--bg-secondary);
   border-radius: 12px;
   border-left: 4px solid var(--rating-color);
   font-size: 0.95rem;
 }
 .criteria-name {
   font-weight: 500;
-  color: #444;
+  color: var(--text-secondary);
 }
 .criteria-score {
   padding: 4px 12px;
   border-radius: 8px;
   background: var(--rating-color);
-  color: white;
+  color: rgb(54, 54, 54);
   font-weight: 600;
   text-transform: capitalize;
   font-size: 0.9rem;

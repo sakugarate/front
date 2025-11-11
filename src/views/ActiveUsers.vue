@@ -151,7 +151,7 @@ const goHome = () => {
 <style scoped>
 .active-users-page {
   min-height: 100vh;
-  background: linear-gradient(-45deg, #F8E8F2, #E6F0FA, #F0E6F5, #E0F8F0);
+  background: var(--bg-primary);
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
   padding: 40px 20px;
@@ -173,7 +173,7 @@ const goHome = () => {
 
 h1 {
   font-size: 2.2rem;
-  color: #213547;
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -196,7 +196,7 @@ h1 {
   text-align: center;
   padding: 40px;
   font-size: 1.2rem;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .error { color: #e74c3c; }
@@ -209,33 +209,33 @@ h1 {
 }
 
 .user-card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px var(--shadow);
   transition: transform 0.2s, background 0.2s;
   cursor: pointer;
 }
 
 .user-card:hover {
   transform: translateY(-6px);
-  background: #f8f9ff;
+  background: var(--bg-secondary);
 }
 
 .user-card h3 {
   margin: 0 0 12px;
   font-size: 1.3rem;
-  color: #1a1a1a;
+  color: var(--text-primary);
 }
 
 .user-card p {
   margin: 8px 0;
   font-size: 1rem;
-  color: #444;
+  color: var(--text-secondary);
 }
 
 .user-card p strong {
-  color: #213547;
+  color: var(--text-primary);
 }
 
 /* Пагинация */
@@ -276,26 +276,26 @@ h1 {
 }
 
 .page-num {
-  background: #f0f0f0;
-  color: #213547;
+  background: var(--bg-card);
+  color: var(--text-primary);
   font-weight: 500;
 }
 
 .page-num.active {
-  background: #213547;
-  color: white;
+  background: var(--text-primary);
+  color: var(--bg-card);
   font-weight: 600;
 }
 
 .ellipsis {
-  color: #666;
+  color: var(--text-secondary);
   font-weight: 500;
   padding: 0 4px;
 }
 
 .pagination-info {
   text-align: center;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 0.9 Ising;
   margin-top: 1rem;
 }

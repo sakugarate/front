@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import SideBar from './components/SideBar.vue'
 import LoginModal from './components/LoginModal.vue'
+import ThemeToggle from './components/ThemeToggle.vue'
 import { getUserIdFromCookies, getUsernameFromCookies } from './composables/getToken'
 import { useRouter } from 'vue-router'
 
@@ -49,6 +50,8 @@ const closeLoginModal = (email: string) => {
       @open-rated="openRatedAnime"
       @open-active-users="openActiveUsers" 
     />
+
+    <ThemeToggle />
 
     <button @click="openLoginModal" class="login-button">
       {{ userName }}

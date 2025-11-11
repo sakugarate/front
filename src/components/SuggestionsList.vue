@@ -49,9 +49,9 @@ const selectSuggestion = (index: number): void => {
   top: calc(100% + 8px);
   left: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--bg-secondary);
   border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px var(--shadow);
   backdrop-filter: blur(10px);
   max-height: 300px;
   overflow-y: auto;
@@ -62,9 +62,9 @@ const selectSuggestion = (index: number): void => {
 .suggestion-item {
   padding: 12px 24px;
   cursor: pointer;
-  color: #213547;
+  color: var(--text-primary);
   transition: background-color 0.2s ease;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .suggestion-item:first-child {
@@ -79,7 +79,7 @@ const selectSuggestion = (index: number): void => {
 }
 
 .suggestion-item:hover {
-  background-color: rgba(100, 108, 255, 0.1);
+  background-color: rgba(100, 108, 255, 0.2);
 }
 
 /* Адаптивность для мобильных устройств */

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import type { AnimeItem } from '../composables/useAnimeSearch'
 import EpisodeRatingPanel, { type EpisodeRating } from './EpisodeRatingPanel.vue'
 import { getTokenFromCookies, hostUrl } from '../composables/getToken'
@@ -41,6 +42,7 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+const router = useRouter()
 
 const anime = ref<AnimeItem | null>(null)
 const episodes = ref<Episode[]>([])
@@ -177,12 +179,19 @@ const handleRate = (rating: EpisodeRating): void => {
 const getAnimeTitle = (): string => {
   return anime.value?.title_english || anime.value?.title || 'Loading...'
 }
+
+const handleBack = (): void => {
+  router.push('/')
+  emit('back')
+}
 </script>
 
 <template>
   <div class="episode-select-page">
     <div class="container">
-
+      <button @click="handleBack" class="back-btn">
+        ← Back
+      </button>
 
       <div v-if="isLoading" class="loading">
         <div class="loader"></div>
@@ -267,19 +276,17 @@ const getAnimeTitle = (): string => {
   margin: 0 auto;
 }
 
-.back-button {
-  background: rgba(255, 255, 255, 0.9);
-  border: 2px solid rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
-  padding: 12px 24px;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #213547;
+.back-btn {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.95rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  margin-bottom: 24px;
-  backdrop-filter: blur(10px);
+  transition: 0.2s;
 }
+
 
 .back-button:hover {
   background: rgba(255, 255, 255, 1);

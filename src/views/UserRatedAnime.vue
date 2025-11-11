@@ -150,11 +150,7 @@ const loadUserAnime = async (page: number = 1) => {
 }
 
 const goBack = () => {
-  if (canGoBack.value) {
-    router.go(-1)
-  } else {
-    router.push('/')
-  }
+  router.push('/')
 }
 
 const goToAnimeDetails = (animeId: number) => {
@@ -183,7 +179,7 @@ const sortByAlphabet = () => {
           {{ isOwnProfile ? 'My Rated Anime' : `User #${userId}'s Anime` }}
         </h1>
         <button @click="goBack" class="back-btn">
-          Back
+          ← Back
         </button>
       </div>
 

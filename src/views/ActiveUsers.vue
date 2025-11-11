@@ -76,7 +76,7 @@ const goHome = () => {
   <div class="active-users-page">
     <div class="container">
       <div class="header">
-        <h1>Active Users</h1>
+        <h1>Fellow sakugatards</h1>
         <button @click="goHome" class="back-btn">Back</button>
       </div>
 

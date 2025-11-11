@@ -31,4 +31,4 @@ export const getTokenFromCookies = (): string => {
   };
 
 
-export const hostUrl = 'http://localhost:8000' //'https://sakurate.art';
+export const hostUrl = 'https://sakurate.art';

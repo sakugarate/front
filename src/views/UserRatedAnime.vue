@@ -8,7 +8,7 @@ interface RatedAnime {
   id: number
   title: string
   rated_episodes_quantity: number
-  total_episodes: number
+  total_episodes?: number
   user_avg_score: string
   avg_community_rating: string
   total_rated_users: number
@@ -247,7 +247,7 @@ const sortByAlphabet = () => {
         >
           <h3>{{ anime.title }}</h3>
           <p class="rating-line" v-if="anime.rated_episodes_quantity > 1">
-            <strong>Rated episodes:</strong>{{ anime.rated_episodes_quantity }} / {{  anime.total_episodes }}
+            <strong>Rated episodes:</strong>{{ anime.rated_episodes_quantity }} / {{  anime?.total_episodes }}
           </p>
             
           <p class="rating-line">

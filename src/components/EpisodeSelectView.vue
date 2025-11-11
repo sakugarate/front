@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import type { AnimeItem } from '../composables/useAnimeSearch'
 import EpisodeRatingPanel, { type EpisodeRating } from './EpisodeRatingPanel.vue'
 import { getTokenFromCookies, hostUrl } from '../composables/getToken'
-import router from '../router'
+
 
 interface Episode {
   mal_id: number
@@ -16,6 +16,12 @@ interface Episode {
 
 interface EpisodeResponse {
   data: Episode[]
+}
+
+interface EpisodeSave {
+  number: number;
+  anime_id: number;
+  title: string;
 }
 
 interface SingleAnimeResponse {
@@ -47,7 +53,8 @@ const ratingEpisodeTitle = ref<string>('')
 
 onMounted(async () => {
   const animeData = await loadAnimeInfo()
-  await Promise.all([loadRatedEpisodes(), loadEpisodes(animeData)])
+  const loadedEpisodes = await Promise.all([loadRatedEpisodes(), loadEpisodes(animeData)])
+  await saveEpisodes(loadedEpisodes[1].data, animeData.mal_id, animeData?.title_english || animeData?.title || '')
 })
 
 const loadAnimeInfo = async (): Promise<AnimeItem> => {
@@ -60,7 +67,7 @@ const loadAnimeInfo = async (): Promise<AnimeItem> => {
     return data.data
 }
 
-const loadEpisodes = async (animeData: AnimeItem): Promise<void> => {
+const loadEpisodes = async (animeData: AnimeItem): Promise<EpisodeResponse> => {
   try {
     console.log('blah blah', animeData)
     if (animeData.type === "Movie" || animeData.type === "TV Special") {
@@ -68,7 +75,12 @@ const loadEpisodes = async (animeData: AnimeItem): Promise<void> => {
           mal_id: 1,
           title: animeData.title_english || animeData.title || 'Anime.'
         }]
-        return
+        return {
+          data: [{
+          mal_id: 1,
+          title: animeData.title_english || animeData.title || 'Anime.'
+        }]
+        }
     }
     isLoading.value = true
     const response = await fetch(`https://api.jikan.moe/v4/anime/${props.animeId}/episodes`)
@@ -77,13 +89,49 @@ const loadEpisodes = async (animeData: AnimeItem): Promise<void> => {
     }
     const data: EpisodeResponse = await response.json()
     episodes.value = data.data || []
+    return data
   } catch (error) {
     console.error('Ошибка загрузки эпизодов:', error)
+    return {data: []}
   } finally {
     isLoading.value = false
   }
 }
 
+function episodeToEpisodeSave(
+  episode: Episode, 
+  anime_id: number
+): EpisodeSave {
+  return {
+    number: episode.mal_id,     // в большинстве случаев mal_id эпизода = его номеру
+    anime_id,
+    title: episode.title
+  };
+}
+
+const saveEpisodes = async (epData: Episode[], animeId: number, animeName: string): Promise<void>  => {
+  const episodesToSave: EpisodeSave[] = epData.map(episode => 
+    episodeToEpisodeSave(episode, animeId)
+  );
+  const data = {
+    anime: {
+      mal_id: animeId,
+      name: animeName
+    },
+    episodes: episodesToSave
+  }
+  await fetch(
+    `${hostUrl}/api/v1/episode/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': getTokenFromCookies()
+      },
+      body: JSON.stringify(data),
+    }
+  )
+
+}
 const loadRatedEpisodes = async () => {
   const response = await fetch(
     `${hostUrl}/api/v1/episode/${props.animeId}/`, {
@@ -120,9 +168,7 @@ const handleRatingClose = (): void => {
 
 const handleRate = (rating: EpisodeRating): void => {
   console.log('Rating submitted:', rating)
-  // await submitRating(rating)
-  
-  // Закрываем панель после оценки
+
   handleRatingClose()
   selectedEpisode.value = null
 }

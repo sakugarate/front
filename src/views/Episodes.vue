@@ -216,7 +216,7 @@ onMounted(() => {
               </div>
               <div class="episode-meta">
                 <div class="rated-count">
-                  <span class="rated-label">Rated:</span>
+                  <span class="rated-label">Rated users:</span>
                   <span class="rated-value">{{ item.count_rated }}</span>
                 </div>
                 <div class="episode-date">

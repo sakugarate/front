@@ -30,6 +30,11 @@ const openActiveUsers = () => {
   isSidebarOpen.value = false
 }
 
+const openEpisodes = () => {
+  router.push('/episodes')
+  isSidebarOpen.value = false
+}
+
 const openLoginModal = () => {
   isLoginModalOpen.value = true
 }
@@ -48,7 +53,8 @@ const closeLoginModal = (email: string) => {
       :is-open="isSidebarOpen"
       @toggle="toggleSidebar"
       @open-rated="openRatedAnime"
-      @open-active-users="openActiveUsers" 
+      @open-active-users="openActiveUsers"
+      @open-episodes="openEpisodes"
     />
 
     <ThemeToggle />

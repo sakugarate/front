@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
 import { hostUrl } from '../composables/getToken'
-
-const router = useRouter()
 
 interface Episode {
   id: number
@@ -37,6 +34,18 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 const sortMode = ref<'recent' | 'popular'>('recent')
 const pagination = ref<ApiResponse['pagination'] | null>(null)
+const currentOffset = ref(0)
+const limit = ref(8)
+
+const currentPage = computed(() => {
+  if (!pagination.value) return 1
+  return Math.floor(pagination.value.offset / pagination.value.limit) + 1
+})
+
+const totalPages = computed(() => {
+  if (!pagination.value) return 1
+  return Math.ceil(pagination.value.total / pagination.value.limit)
+})
 
 const loadEpisodes = async () => {
   loading.value = true
@@ -46,7 +55,7 @@ const loadEpisodes = async () => {
       ? { recent: false } 
       : { popular: false }
     
-    const url = `${hostUrl}/api/v1/episode/?orders=${encodeURIComponent(JSON.stringify(orders))}`
+    const url = `${hostUrl}/api/v1/episode/?orders=${encodeURIComponent(JSON.stringify(orders))}&offset=${currentOffset.value}&limit=${limit.value}`
     
     const response = await fetch(url, {
       method: 'GET',
@@ -62,6 +71,7 @@ const loadEpisodes = async () => {
     const data: ApiResponse = await response.json()
     episodes.value = data.data
     pagination.value = data.pagination
+    currentOffset.value = data.pagination.offset
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Произошла ошибка'
   } finally {
@@ -71,7 +81,69 @@ const loadEpisodes = async () => {
 
 const setSortMode = (mode: 'recent' | 'popular') => {
   sortMode.value = mode
+  currentOffset.value = 0
   loadEpisodes()
+}
+
+const goToPage = (page: number) => {
+  if (!pagination.value) return
+  const newOffset = (page - 1) * pagination.value.limit
+  currentOffset.value = newOffset
+  loadEpisodes()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const goToPreviousPage = () => {
+  if (currentPage.value > 1) {
+    goToPage(currentPage.value - 1)
+  }
+}
+
+const goToNextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    goToPage(currentPage.value + 1)
+  }
+}
+
+const getPageNumbers = () => {
+  const pages: (number | string)[] = []
+  const total = totalPages.value
+  const current = currentPage.value
+  
+  if (total <= 7) {
+    // Show all pages if 7 or fewer
+    for (let i = 1; i <= total; i++) {
+      pages.push(i)
+    }
+  } else {
+    // Always show first page
+    pages.push(1)
+    
+    if (current <= 3) {
+      // Near the start
+      for (let i = 2; i <= 4; i++) {
+        pages.push(i)
+      }
+      pages.push('...')
+      pages.push(total)
+    } else if (current >= total - 2) {
+      // Near the end
+      pages.push('...')
+      for (let i = total - 3; i <= total; i++) {
+        pages.push(i)
+      }
+    } else {
+      // In the middle
+      pages.push('...')
+      for (let i = current - 1; i <= current + 1; i++) {
+        pages.push(i)
+      }
+      pages.push('...')
+      pages.push(total)
+    }
+  }
+  
+  return pages
 }
 
 const formatDate = (dateString: string) => {
@@ -115,7 +187,7 @@ onMounted(() => {
 
       <!-- Pagination info -->
       <div v-if="pagination" class="pagination-info">
-        Showing {{ episodes.length }} of {{ pagination.total }} episodes
+        Showing {{ pagination.offset + 1 }}-{{ Math.min(pagination.offset + pagination.limit, pagination.total) }} of {{ pagination.total }} episodes
       </div>
 
       <!-- Loading state -->
@@ -154,6 +226,42 @@ onMounted(() => {
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Pagination controls -->
+      <div v-if="pagination && totalPages > 1" class="pagination-controls">
+        <button
+          @click="goToPreviousPage"
+          :disabled="currentPage === 1"
+          class="pagination-btn"
+          :class="{ disabled: currentPage === 1 }"
+        >
+          Previous
+        </button>
+        
+        <div class="page-numbers">
+          <button
+            v-for="page in getPageNumbers()"
+            :key="page"
+            @click="typeof page === 'number' && goToPage(page)"
+            :class="[
+              'page-btn',
+              { active: page === currentPage, ellipsis: page === '...' }
+            ]"
+            :disabled="page === '...'"
+          >
+            {{ page }}
+          </button>
+        </div>
+        
+        <button
+          @click="goToNextPage"
+          :disabled="currentPage === totalPages"
+          class="pagination-btn"
+          :class="{ disabled: currentPage === totalPages }"
+        >
+          Next
+        </button>
       </div>
     </div>
   </div>
@@ -234,6 +342,82 @@ onMounted(() => {
   font-size: 0.9rem;
   margin-bottom: 24px;
   padding-left: 4px;
+}
+
+/* Pagination controls */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+
+.pagination-btn {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 100px;
+}
+
+.pagination-btn:hover:not(.disabled) {
+  background: var(--bg-secondary);
+  border-color: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+.pagination-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.page-btn {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 40px;
+}
+
+.page-btn:hover:not(.ellipsis):not(.active) {
+  background: var(--bg-secondary);
+  border-color: var(--text-primary);
+}
+
+.page-btn.active {
+  background: var(--text-primary);
+  color: var(--bg-card);
+  border-color: var(--text-primary);
+}
+
+.page-btn.ellipsis {
+  border: none;
+  background: transparent;
+  cursor: default;
+  min-width: auto;
+  padding: 8px 4px;
+}
+
+.page-btn:disabled {
+  cursor: default;
 }
 
 /* Loading, error, empty states */

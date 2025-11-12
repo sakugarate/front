@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { hostUrl } from '../composables/getToken'
+import { getRatingColorFromFloat } from '../composables/buttonColors'
 
 interface Episode {
   id: number
@@ -33,7 +34,7 @@ interface ApiResponse {
 const episodes = ref<EpisodeData[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
-const sortMode = ref<'recent' | 'popular' | 'rating'>('recent')
+const sortMode = ref<'popular' | 'rating'>('popular')
 const pagination = ref<ApiResponse['pagination'] | null>(null)
 const currentOffset = ref(0)
 const limit = ref(8)
@@ -53,14 +54,11 @@ const loadEpisodes = async () => {
   error.value = null
   try {
     let orders: Record<string, boolean>
-    if (sortMode.value === 'recent') {
-      orders = { recent: false }
+    if (sortMode.value === 'rating') {
+      orders = { rating: false }
     } else if (sortMode.value === 'popular') {
       orders = { popular: false }
-    } else {
-      orders = { rating: false }
     }
-    
     const url = `${hostUrl}/api/v1/episode/?orders=${encodeURIComponent(JSON.stringify(orders))}&offset=${currentOffset.value}&limit=${limit.value}`
     
     const response = await fetch(url, {
@@ -85,7 +83,7 @@ const loadEpisodes = async () => {
   }
 }
 
-const setSortMode = (mode: 'recent' | 'popular' | 'rating') => {
+const setSortMode = (mode: 'rating' | 'popular') => {
   sortMode.value = mode
   currentOffset.value = 0
   loadEpisodes()
@@ -117,29 +115,24 @@ const getPageNumbers = () => {
   const current = currentPage.value
   
   if (total <= 7) {
-    // Show all pages if 7 or fewer
     for (let i = 1; i <= total; i++) {
       pages.push(i)
     }
   } else {
-    // Always show first page
     pages.push(1)
     
     if (current <= 3) {
-      // Near the start
       for (let i = 2; i <= 4; i++) {
         pages.push(i)
       }
       pages.push('...')
       pages.push(total)
     } else if (current >= total - 2) {
-      // Near the end
       pages.push('...')
       for (let i = total - 3; i <= total; i++) {
         pages.push(i)
       }
     } else {
-      // In the middle
       pages.push('...')
       for (let i = current - 1; i <= current + 1; i++) {
         pages.push(i)
@@ -175,13 +168,6 @@ onMounted(() => {
 
       <!-- Filter buttons -->
       <div class="filter-controls">
-        <button
-          @click="setSortMode('recent')"
-          :class="{ active: sortMode === 'recent' }"
-          class="filter-btn"
-        >
-          Recent
-        </button>
         <button
           @click="setSortMode('popular')"
           :class="{ active: sortMode === 'popular' }"
@@ -228,9 +214,23 @@ onMounted(() => {
                 <p class="anime-name">{{ item.anime.name }}</p>
               </div>
               <div class="episode-meta">
-                <div class="average-rating">
+                <div
+                  class="average-rating"
+                  :style="{
+                    'border-left-color': getRatingColorFromFloat(item.episode.score),
+                    'box-shadow': `0 0 12px ${getRatingColorFromFloat(item.episode.score)}20`
+                  }"
+                >
                   <span class="rating-label">Average Rating:</span>
-                  <span class="rating-score">{{ item.episode.score.toFixed(1) }}</span>
+                  <span
+                    class="rating-score"
+                    :style="{
+                      color: getRatingColorFromFloat(item.episode.score),
+                      textShadow: `0 0 8px ${getRatingColorFromFloat(item.episode.score)}20`
+                    }"
+                  >
+                    {{ item.episode.score.toFixed(1) }}
+                  </span>
                 </div>
                 <div class="rated-count">
                   <span class="rated-label">Rated users:</span>
@@ -518,7 +518,8 @@ onMounted(() => {
   background: var(--bg-secondary);
   padding: 6px 12px;
   border-radius: 8px;
-  border-left: 4px solid #4CAF50;
+  border-left: 4px solid;
+  transition: all 0.3s ease;
 }
 
 .rating-label {
@@ -527,9 +528,9 @@ onMounted(() => {
 }
 
 .rating-score {
-  color: var(--text-primary);
   font-weight: 700;
   font-size: 1.1rem;
+  transition: all 0.3s ease;
 }
 
 .rated-count {
@@ -588,4 +589,3 @@ onMounted(() => {
   }
 }
 </style>
-

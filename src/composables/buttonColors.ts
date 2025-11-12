@@ -25,6 +25,11 @@ export const getRatingColorFromStr = (value: string): string => {
     }
     return ''
 };
+export const getRatingColorFromFloat = (value: number): string => {
+    const rating = numsToRatingOpts[Math.floor(value)]
+    console.log(rating)
+    return colors[rating] || '#FFAC1C'
+};
 export const ratingOptionsToNums = {
     'garbage': 1,
     'weak': 2,

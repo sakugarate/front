@@ -6,6 +6,7 @@ interface Episode {
   id: number
   name: string
   number: number
+  score: number
   created_at: string
 }
 
@@ -32,7 +33,7 @@ interface ApiResponse {
 const episodes = ref<EpisodeData[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
-const sortMode = ref<'recent' | 'popular'>('recent')
+const sortMode = ref<'recent' | 'popular' | 'rating'>('recent')
 const pagination = ref<ApiResponse['pagination'] | null>(null)
 const currentOffset = ref(0)
 const limit = ref(8)
@@ -51,9 +52,14 @@ const loadEpisodes = async () => {
   loading.value = true
   error.value = null
   try {
-    const orders = sortMode.value === 'recent' 
-      ? { recent: false } 
-      : { popular: false }
+    let orders: Record<string, boolean>
+    if (sortMode.value === 'recent') {
+      orders = { recent: false }
+    } else if (sortMode.value === 'popular') {
+      orders = { popular: false }
+    } else {
+      orders = { rating: false }
+    }
     
     const url = `${hostUrl}/api/v1/episode/?orders=${encodeURIComponent(JSON.stringify(orders))}&offset=${currentOffset.value}&limit=${limit.value}`
     
@@ -79,7 +85,7 @@ const loadEpisodes = async () => {
   }
 }
 
-const setSortMode = (mode: 'recent' | 'popular') => {
+const setSortMode = (mode: 'recent' | 'popular' | 'rating') => {
   sortMode.value = mode
   currentOffset.value = 0
   loadEpisodes()
@@ -183,6 +189,13 @@ onMounted(() => {
         >
           Popular
         </button>
+        <button
+          @click="setSortMode('rating')"
+          :class="{ active: sortMode === 'rating' }"
+          class="filter-btn"
+        >
+          Rating
+        </button>
       </div>
 
       <!-- Pagination info -->
@@ -215,6 +228,10 @@ onMounted(() => {
                 <p class="anime-name">{{ item.anime.name }}</p>
               </div>
               <div class="episode-meta">
+                <div class="average-rating">
+                  <span class="rating-label">Average Rating:</span>
+                  <span class="rating-score">{{ item.episode.score.toFixed(1) }}</span>
+                </div>
                 <div class="rated-count">
                   <span class="rated-label">Rated users:</span>
                   <span class="rated-value">{{ item.count_rated }}</span>
@@ -492,6 +509,27 @@ onMounted(() => {
   gap: 8px;
   align-items: flex-end;
   text-align: right;
+}
+
+.average-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-secondary);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border-left: 4px solid #4CAF50;
+}
+
+.rating-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.rating-score {
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 1.1rem;
 }
 
 .rated-count {

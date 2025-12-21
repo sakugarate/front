@@ -56,7 +56,7 @@ const loadEpisodes = async () => {
     let orders: Record<string, boolean>
     if (sortMode.value === 'rating') {
       orders = { rating: false }
-    } else if (sortMode.value === 'popular') {
+    } else {
       orders = { popular: false }
     }
     const url = `${hostUrl}/api/v1/episode/?orders=${encodeURIComponent(JSON.stringify(orders))}&offset=${currentOffset.value}&limit=${limit.value}`

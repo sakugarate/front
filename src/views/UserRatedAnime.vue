@@ -48,6 +48,9 @@ const totalPages = computed(() => Math.ceil(pagination.value.total / itemsPerPag
 // Состояние сортировки
 const sortMode = ref<'rating' | 'alphabet' | null>(null)
 
+// Состояние поиска
+const searchQuery = ref<string>('')
+
 // === Total Rates по аниме ===
 const totalAnimeRates = ref<AnimeTotalRate[]>([])
 const totalAnimeRatesLoading = ref(true)
@@ -98,6 +101,18 @@ watch(sortMode, () => {
   loadTotalAnimeRates() // обновляем статистику при сортировке (на всякий случай)
 })
 
+// Сброс страницы при изменении поискового запроса (debounce)
+let searchTimeout: ReturnType<typeof setTimeout> | null = null
+watch(searchQuery, () => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1
+    loadUserAnime(1)
+  }, 500) // Задержка 500мс
+})
+
 const loadUserAnime = async (page: number = 1) => {
   isLoading.value = true
   error.value = null
@@ -105,6 +120,11 @@ const loadUserAnime = async (page: number = 1) => {
   try {
     const offset = (page - 1) * itemsPerPage
     let url = `${hostUrl}/api/v1/anime/${userId}/?limit=${itemsPerPage}&offset=${offset}`
+
+    // Добавляем поисковый запрос, если он есть
+    if (searchQuery.value.trim()) {
+      url += `&text=${encodeURIComponent(searchQuery.value.trim())}`
+    }
 
     if (sortMode.value === 'rating') {
       url += `&orders=${encodeURIComponent('{"rating": false}')}`
@@ -169,6 +189,22 @@ const sortByRating = () => {
 const sortByAlphabet = () => {
   sortMode.value = 'alphabet'
 }
+
+const handleSearch = () => {
+  currentPage.value = 1
+  loadUserAnime(1)
+}
+
+const handleSearchInput = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  searchQuery.value = target.value
+}
+
+const handleSearchKeyDown = (event: KeyboardEvent) => {
+  if (event.key === 'Enter') {
+    handleSearch()
+  }
+}
 </script>
 
 <template>
@@ -181,6 +217,35 @@ const sortByAlphabet = () => {
         <button @click="goBack" class="back-btn">
           ← Back
         </button>
+      </div>
+
+      <!-- Поиск -->
+      <div class="search-section">
+        <div class="search-box-wrapper">
+          <input
+            type="text"
+            :value="searchQuery"
+            @input="handleSearchInput"
+            @keydown="handleSearchKeyDown"
+            placeholder="Search anime..."
+            class="search-input"
+          />
+          <button @click="handleSearch" class="search-button" :disabled="isLoading">
+            <svg
+              v-if="!isLoading"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <span v-else class="loader"></span>
+          </button>
+        </div>
       </div>
 
       <!-- Кнопки сортировки -->
@@ -397,6 +462,82 @@ h1 {
 
 .back-btn:hover {
   background: #45a049;
+}
+
+/* Поиск */
+.search-section {
+  margin-bottom: 24px;
+}
+
+.search-box-wrapper {
+  display: flex;
+  gap: 12px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 8px 8px 8px 20px;
+  border: 2px solid var(--border-color);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px var(--shadow);
+  max-width: 600px;
+}
+
+.search-box-wrapper:focus-within {
+  border-color: #646cff;
+  box-shadow: 0 0 20px rgba(100, 108, 255, 0.3);
+}
+
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 1rem;
+  padding: 8px 0;
+}
+
+.search-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.search-button {
+  background: #646cff;
+  border: none;
+  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: white;
+  flex-shrink: 0;
+}
+
+.search-button:hover:not(:disabled) {
+  background: #535bf2;
+  transform: scale(1.05);
+}
+
+.search-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loader {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .sort-buttons {

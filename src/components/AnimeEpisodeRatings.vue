@@ -34,6 +34,39 @@ const sortMode = ref<'number' | 'rating' | null>('number')
 const userId = route.params.userId as string
 const animeId = route.params.animeId as string
 
+// ===== Episode Average Rates =====
+interface EpisodeAvgRate {
+  episode_number: number
+  avg_rate: string
+}
+const episodeAvgRates = ref<EpisodeAvgRate[]>([])
+const episodeAvgRatesLoading = ref(true)
+const episodeAvgRatesError = ref<string | null>(null)
+
+const loadEpisodeAvgRates = async () => {
+  episodeAvgRatesLoading.value = true
+  episodeAvgRatesError.value = null
+  try {
+    const url = `${hostUrl}/api/v1/episode/${animeId}/${userId}/?orders=${encodeURIComponent('{"number": true}')}`
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': getTokenFromCookies()
+      }
+    })
+    if (!response.ok) throw new Error('Error loading episode averages')
+    const data: EpisodeRating[] = await response.json()
+    episodeAvgRates.value = data.map(item => ({
+      episode_number: item.episode.number,
+      avg_rate: item.episode.user_avg_rate
+    }))
+  } catch (err) {
+    episodeAvgRatesError.value = err instanceof Error ? err.message : 'Ошибка загрузки'
+  } finally {
+    episodeAvgRatesLoading.value = false
+  }
+}
+
 // ===== Total Rates =====
 const totalRates = ref<{ rate_category: RatingValue, quantity: number }[]>([])
 const totalRatesLoading = ref(true)
@@ -116,6 +149,12 @@ const getAvgRateInfo = (avgRate: string) => {
   return { word, color, full: avgRate }
 }
 
+const getEpisodeAvgRateColor = (avgRate: string): string => {
+  const match = avgRate.match(/^(\w+)/)
+  const word = match ? (match[1] as RatingValue) : 'whatever'
+  return getRatingColor(word)
+}
+
 // ===== Модалка =====
 const isModalOpen = ref(false)
 const selectedEpisode = ref<Episode | null>(null)
@@ -132,7 +171,7 @@ const closeRatingModal = () => {
 
 const handleRateSaved = () => {
   closeRatingModal()
-  Promise.all([loadEpisodes(), loadTotalRates()])
+  Promise.all([loadEpisodes(), loadTotalRates(), loadEpisodeAvgRates()])
 }
 
 // ===== Жизненный цикл =====
@@ -145,7 +184,7 @@ onMounted(async () => {
       else if (parsed.rating === false) sortMode.value = 'rating'
     } catch {}
   }
-  await Promise.all([loadEpisodes(), loadTotalRates()])
+  await Promise.all([loadEpisodes(), loadTotalRates(), loadEpisodeAvgRates()])
 })
 
 watch(sortMode, () => {
@@ -174,6 +213,31 @@ watch(sortMode, () => {
           :class="{ active: sortMode === 'rating' }"
           class="sort-btn"
         >Sort by rating</button>
+      </div>
+
+      <!-- Episode Average Rates Grid -->
+      <div class="episode-avg-rates-section">
+        <h2 class="section-title">Episode Average Rates</h2>
+        <template v-if="episodeAvgRatesLoading">Загрузка средних оценок...</template>
+        <template v-else-if="episodeAvgRatesError">
+          <span class="error">{{ episodeAvgRatesError }}</span>
+        </template>
+        <template v-else-if="episodeAvgRates.length === 0">
+          <span class="empty">Нет данных о средних оценках эпизодов</span>
+        </template>
+        <template v-else>
+          <div class="episode-grid">
+            <div
+              v-for="item in episodeAvgRates"
+              :key="item.episode_number"
+              class="episode-square"
+              :style="{ backgroundColor: getEpisodeAvgRateColor(item.avg_rate) }"
+              :title="`Episode ${item.episode_number}: ${item.avg_rate}`"
+            >
+              <span class="episode-number">{{ item.episode_number }}</span>
+            </div>
+          </div>
+        </template>
       </div>
 
       <!-- Total Rate Categories -->
@@ -332,6 +396,59 @@ h1 {
   background: var(--text-primary);
   color: var(--bg-card);
   border-color: var(--text-primary);
+}
+
+/* Episode Average Rates Grid */
+.episode-avg-rates-section {
+  margin-bottom: 32px;
+}
+.section-title {
+  color: var(--text-primary);
+  font-size: 1.3rem;
+  margin: 0 0 16px 4px;
+  font-weight: 600;
+}
+.episode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+  gap: 8px;
+  max-width: 100%;
+}
+.episode-square {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  position: relative;
+  min-height: 50px;
+}
+.episode-square:hover {
+  transform: scale(1.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+.episode-number {
+  color: rgb(30, 30, 30);
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.5), 0 0 2px rgba(0, 0, 0, 0.2);
+}
+@media (max-width: 768px) {
+  .episode-grid {
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    gap: 6px;
+  }
+  .episode-square {
+    min-height: 40px;
+  }
+  .episode-number {
+    font-size: 0.8rem;
+  }
 }
 
 /* Total Rate Categories */

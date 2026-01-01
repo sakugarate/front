@@ -37,11 +37,15 @@ const animeId = route.params.animeId as string
 // ===== Episode Average Rates =====
 interface EpisodeAvgRate {
   episode_number: number
+  episode_name: string
   avg_rate: string
+  rating: string
 }
 const episodeAvgRates = ref<EpisodeAvgRate[]>([])
 const episodeAvgRatesLoading = ref(true)
 const episodeAvgRatesError = ref<string | null>(null)
+const hoveredEpisode = ref<EpisodeAvgRate | null>(null)
+const tooltipPosition = ref({ x: 0, y: 0 })
 
 const loadEpisodeAvgRates = async () => {
   episodeAvgRatesLoading.value = true
@@ -58,13 +62,28 @@ const loadEpisodeAvgRates = async () => {
     const data: EpisodeRating[] = await response.json()
     episodeAvgRates.value = data.map(item => ({
       episode_number: item.episode.number,
-      avg_rate: item.episode.user_avg_rate
+      episode_name: item.episode.name,
+      avg_rate: item.episode.user_avg_rate,
+      rating: item.rating
     }))
   } catch (err) {
     episodeAvgRatesError.value = err instanceof Error ? err.message : 'Ошибка загрузки'
   } finally {
     episodeAvgRatesLoading.value = false
   }
+}
+
+const showTooltip = (event: MouseEvent, episode: EpisodeAvgRate) => {
+  hoveredEpisode.value = episode
+  // Position tooltip with some offset to avoid covering the cursor
+  tooltipPosition.value = { 
+    x: event.clientX, 
+    y: event.clientY - 10 
+  }
+}
+
+const hideTooltip = () => {
+  hoveredEpisode.value = null
 }
 
 // ===== Total Rates =====
@@ -232,9 +251,35 @@ watch(sortMode, () => {
               :key="item.episode_number"
               class="episode-square"
               :style="{ backgroundColor: getEpisodeAvgRateColor(item.avg_rate) }"
-              :title="`Episode ${item.episode_number}: ${item.avg_rate}`"
+              @mouseenter="showTooltip($event, item)"
+              @mouseleave="hideTooltip"
+              @mousemove="tooltipPosition = { x: $event.clientX, y: $event.clientY }"
             >
               <span class="episode-number">{{ item.episode_number }}</span>
+            </div>
+          </div>
+          <!-- Tooltip -->
+          <div
+            v-if="hoveredEpisode"
+            class="episode-tooltip"
+            :style="{ left: tooltipPosition.x + 'px', top: tooltipPosition.y + 'px' }"
+          >
+            <div class="tooltip-header">
+              <strong>Episode {{ hoveredEpisode.episode_number }}</strong>
+            </div>
+            <div class="tooltip-name">{{ hoveredEpisode.episode_name }}</div>
+            <div class="tooltip-rating">
+              <span class="tooltip-label">Rating:</span>
+              <span class="tooltip-value">{{ hoveredEpisode.rating }}</span>
+            </div>
+            <div class="tooltip-avg-rate">
+              <span class="tooltip-label">Avg. Rate:</span>
+              <span 
+                class="tooltip-value"
+                :style="{ color: getEpisodeAvgRateColor(hoveredEpisode.avg_rate) }"
+              >
+                {{ hoveredEpisode.avg_rate }}
+              </span>
             </div>
           </div>
         </template>
@@ -437,6 +482,47 @@ h1 {
   font-weight: 700;
   font-size: 0.9rem;
   text-shadow: 0 1px 3px rgba(255, 255, 255, 0.5), 0 0 2px rgba(0, 0, 0, 0.2);
+}
+.episode-tooltip {
+  position: fixed;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+  margin-top: -8px;
+  min-width: 200px;
+  max-width: 300px;
+}
+.tooltip-header {
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+}
+.tooltip-name {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  font-style: italic;
+}
+.tooltip-rating,
+.tooltip-avg-rate {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+}
+.tooltip-label {
+  color: var(--text-secondary);
+  margin-right: 8px;
+}
+.tooltip-value {
+  color: var(--text-primary);
+  font-weight: 600;
 }
 @media (max-width: 768px) {
   .episode-grid {

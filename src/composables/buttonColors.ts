@@ -3,8 +3,8 @@
 export type RatingValue = 'garbage' |  'broken' | 'weak'  | 'inconsistent' | 'whatever' | 'acceptable' | 'solid' | 'stunning' | 'generational'
 export const colors: Record<RatingValue, string> = {
     'garbage': '#ff0000',
-    'weak': '#EE4B2B',
     'broken': '#FFAC1C',
+    'weak': '#EE4B2B',
     'inconsistent': '#ffcc00',
     'whatever': '#ffff00',
     'acceptable': '#ccff66',
@@ -32,8 +32,8 @@ export const getRatingColorFromFloat = (value: number): string => {
 };
 export const ratingOptionsToNums = {
     'garbage': 1,
-    'weak': 2,
-    'broken': 3,
+    'broken': 2,
+    'weak': 3,
     'inconsistent': 4,
     'whatever': 5,
     'acceptable': 6,
@@ -43,8 +43,8 @@ export const ratingOptionsToNums = {
   }
 const numsToRatingOpts = {
     1: 'garbage',
-    2: 'weak',
-    3: 'broken',
+    2: 'broken',
+    3: 'weak',
     4: 'inconsistent',
     5: 'whatever',
     6: 'acceptable',

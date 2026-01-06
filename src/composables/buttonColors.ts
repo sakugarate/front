@@ -3,8 +3,8 @@
 export type RatingValue = 'garbage' |  'broken' | 'weak'  | 'inconsistent' | 'whatever' | 'acceptable' | 'solid' | 'stunning' | 'generational'
 export const colors: Record<RatingValue, string> = {
     'garbage': '#ff0000',
-    'broken': '#FFAC1C',
-    'weak': '#EE4B2B',
+    'broken': '#EE4B2B',
+    'weak': '#FFAC1C',
     'inconsistent': '#ffcc00',
     'whatever': '#ffff00',
     'acceptable': '#ccff66',

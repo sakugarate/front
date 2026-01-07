@@ -31,6 +31,11 @@ interface ApiResponse {
   data: EpisodeData[]
 }
 
+interface Criteria {
+  id: number
+  name: string
+}
+
 const episodes = ref<EpisodeData[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
@@ -38,6 +43,13 @@ const sortMode = ref<'popular' | 'rating'>('popular')
 const pagination = ref<ApiResponse['pagination'] | null>(null)
 const currentOffset = ref(0)
 const limit = ref(8)
+
+// New ordering fields
+const recentOrder = ref<boolean | null>(null)
+const criteriaOrders = ref<Record<string, boolean>>({})
+const criteria = ref<Criteria[]>([])
+const criteriaLoading = ref(false)
+const showCriteriaOrders = ref(false)
 
 const currentPage = computed(() => {
   if (!pagination.value) return 1
@@ -49,17 +61,81 @@ const totalPages = computed(() => {
   return Math.ceil(pagination.value.total / pagination.value.limit)
 })
 
+const loadCriteria = async () => {
+  criteriaLoading.value = true
+  try {
+    const response = await fetch(`${hostUrl}/api/v1/criteria/`)
+    if (!response.ok) {
+      throw new Error('Error loading criteria')
+    }
+    const data: Criteria[] = await response.json()
+    criteria.value = data
+    // Initialize criteria orders as empty
+    criteriaOrders.value = {}
+  } catch (err) {
+    console.error('Error loading criteria:', err)
+    criteria.value = []
+  } finally {
+    criteriaLoading.value = false
+  }
+}
+
+const toggleCriteriaOrder = (criteriaId: number) => {
+  const idStr = criteriaId.toString()
+  if (criteriaOrders.value[idStr] === undefined) {
+    criteriaOrders.value[idStr] = false
+  } else if (criteriaOrders.value[idStr] === false) {
+    criteriaOrders.value[idStr] = true
+  } else {
+    delete criteriaOrders.value[idStr]
+  }
+  currentOffset.value = 0
+  loadEpisodes()
+}
+
+const toggleRecentOrder = () => {
+  if (recentOrder.value === null) {
+    recentOrder.value = false
+  } else if (recentOrder.value === false) {
+    recentOrder.value = true
+  } else {
+    recentOrder.value = null
+  }
+  currentOffset.value = 0
+  loadEpisodes()
+}
+
 const loadEpisodes = async () => {
   loading.value = true
   error.value = null
   try {
-    let orders: Record<string, boolean>
+    let orders: Record<string, boolean> = {}
+    
+    // Add existing sort mode
     if (sortMode.value === 'rating') {
-      orders = { rating: false }
+      orders.rating = false
     } else {
-      orders = { popular: false }
+      orders.popular = false
     }
-    const url = `${hostUrl}/api/v1/episode/?orders=${encodeURIComponent(JSON.stringify(orders))}&offset=${currentOffset.value}&limit=${limit.value}`
+    
+    // Add recent order if set
+    if (recentOrder.value !== null) {
+      orders.recent = recentOrder.value
+    }
+    
+    // Build URL with orders
+    let url = `${hostUrl}/api/v1/episode/?orders=${encodeURIComponent(JSON.stringify(orders))}`
+    
+    // Add criteria_orders if any are set
+    const activeCriteriaOrders = Object.keys(criteriaOrders.value).length > 0
+      ? criteriaOrders.value
+      : null
+    
+    if (activeCriteriaOrders) {
+      url += `&criteria_orders=${encodeURIComponent(JSON.stringify(activeCriteriaOrders))}`
+    }
+    
+    url += `&offset=${currentOffset.value}&limit=${limit.value}`
     
     const response = await fetch(url, {
       method: 'GET',
@@ -154,9 +230,31 @@ const formatDate = (dateString: string) => {
   })
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await loadCriteria()
   loadEpisodes()
 })
+
+const getCriteriaOrderIcon = (criteriaId: number): string => {
+  const idStr = criteriaId.toString()
+  if (criteriaOrders.value[idStr] === undefined) {
+    return '○'
+  } else if (criteriaOrders.value[idStr] === false) {
+    return '↓'
+  } else {
+    return '↑'
+  }
+}
+
+const getRecentOrderIcon = (): string => {
+  if (recentOrder.value === null) {
+    return '○'
+  } else if (recentOrder.value === false) {
+    return '↓'
+  } else {
+    return '↑'
+  }
+}
 </script>
 
 <template>
@@ -182,6 +280,44 @@ onMounted(() => {
         >
           Rating
         </button>
+        <button
+          @click="toggleRecentOrder"
+          :class="{ active: recentOrder !== null }"
+          class="filter-btn"
+        >
+          Recent {{ getRecentOrderIcon() }}
+        </button>
+        <button
+          @click="showCriteriaOrders = !showCriteriaOrders"
+          :class="{ active: showCriteriaOrders || Object.keys(criteriaOrders).length > 0 }"
+          class="filter-btn"
+        >
+          Criteria Orders
+        </button>
+      </div>
+
+      <!-- Criteria Orders Panel -->
+      <div v-if="showCriteriaOrders" class="criteria-orders-panel">
+        <div class="criteria-orders-header">
+          <h3>Order by Criteria</h3>
+          <button @click="showCriteriaOrders = false" class="close-btn">×</button>
+        </div>
+        <div v-if="criteriaLoading" class="criteria-loading">Loading criteria...</div>
+        <div v-else-if="criteria.length === 0" class="criteria-empty">No criteria available</div>
+        <div v-else class="criteria-list">
+          <button
+            v-for="criterion in criteria"
+            :key="criterion.id"
+            @click="toggleCriteriaOrder(criterion.id)"
+            :class="[
+              'criteria-order-btn',
+              { active: criteriaOrders[criterion.id.toString()] !== undefined }
+            ]"
+          >
+            <span class="criteria-name">{{ criterion.name }}</span>
+            <span class="criteria-icon">{{ getCriteriaOrderIcon(criterion.id) }}</span>
+          </button>
+        </div>
       </div>
 
       <!-- Pagination info -->
@@ -351,6 +487,100 @@ onMounted(() => {
   background: var(--text-primary);
   color: var(--bg-card);
   border-color: var(--text-primary);
+}
+
+/* Criteria Orders Panel */
+.criteria-orders-panel {
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.criteria-orders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.criteria-orders-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.criteria-loading,
+.criteria-empty {
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 20px;
+}
+
+.criteria-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.criteria-order-btn {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.criteria-order-btn:hover {
+  background: var(--bg-card);
+  border-color: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+.criteria-order-btn.active {
+  background: var(--text-primary);
+  color: var(--bg-card);
+  border-color: var(--text-primary);
+}
+
+.criteria-name {
+  flex: 1;
+}
+
+.criteria-icon {
+  font-weight: 700;
+  font-size: 1rem;
 }
 
 /* Pagination info */

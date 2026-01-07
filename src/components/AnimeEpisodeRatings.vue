@@ -4,7 +4,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getTokenFromCookies, hostUrl } from '../composables/getToken'
-import { getRatingColor, RatingValue, colors } from '../composables/buttonColors'
+import { getRatingColor, RatingValue, colors, getRatingColorFromFloat } from '../composables/buttonColors'
 import router from '../router'
 import EpisodeRatingPanel from './EpisodeRatingPanel.vue' // <-- ваш компонент с панелью оценки
 
@@ -84,6 +84,35 @@ const showTooltip = (event: MouseEvent, episode: EpisodeAvgRate) => {
 
 const hideTooltip = () => {
   hoveredEpisode.value = null
+}
+
+// ===== Criteria Averages =====
+interface CriteriaAvg {
+  criteria_name: string
+  average_score: number
+}
+const criteriaAverages = ref<CriteriaAvg[]>([])
+const criteriaAveragesLoading = ref(true)
+const criteriaAveragesError = ref<string | null>(null)
+
+const loadCriteriaAverages = async () => {
+  criteriaAveragesLoading.value = true
+  criteriaAveragesError.value = null
+  try {
+    const url = `${hostUrl}/api/v1/anime/${animeId}/criteria-avg/`
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': getTokenFromCookies()
+      }
+    })
+    if (!response.ok) throw new Error('Error loading criteria averages')
+    criteriaAverages.value = await response.json()
+  } catch (err) {
+    criteriaAveragesError.value = err instanceof Error ? err.message : 'Ошибка загрузки'
+  } finally {
+    criteriaAveragesLoading.value = false
+  }
 }
 
 // ===== Total Rates =====
@@ -190,7 +219,7 @@ const closeRatingModal = () => {
 
 const handleRateSaved = () => {
   closeRatingModal()
-  Promise.all([loadEpisodes(), loadTotalRates(), loadEpisodeAvgRates()])
+  Promise.all([loadEpisodes(), loadTotalRates(), loadEpisodeAvgRates(), loadCriteriaAverages()])
 }
 
 // ===== Жизненный цикл =====
@@ -203,7 +232,7 @@ onMounted(async () => {
       else if (parsed.rating === false) sortMode.value = 'rating'
     } catch {}
   }
-  await Promise.all([loadEpisodes(), loadTotalRates(), loadEpisodeAvgRates()])
+  await Promise.all([loadEpisodes(), loadTotalRates(), loadEpisodeAvgRates(), loadCriteriaAverages()])
 })
 
 watch(sortMode, () => {
@@ -279,6 +308,39 @@ watch(sortMode, () => {
                 :style="{ color: getEpisodeAvgRateColor(hoveredEpisode.avg_rate) }"
               >
                 {{ hoveredEpisode.avg_rate }}
+              </span>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Criteria Averages -->
+      <div class="criteria-averages-section">
+        <h2 class="section-title">Criteria Average Scores</h2>
+        <template v-if="criteriaAveragesLoading">Загрузка средних оценок критериев...</template>
+        <template v-else-if="criteriaAveragesError">
+          <span class="error">{{ criteriaAveragesError }}</span>
+        </template>
+        <template v-else-if="criteriaAverages.length === 0">
+          <span class="empty">Нет данных о средних оценках критериев</span>
+        </template>
+        <template v-else>
+          <div class="criteria-averages-grid">
+            <div
+              v-for="item in criteriaAverages"
+              :key="item.criteria_name"
+              class="criteria-avg-item"
+              :style="{ '--rating-color': getRatingColorFromFloat(item.average_score) }"
+            >
+              <span class="criteria-avg-name">{{ item.criteria_name }}</span>
+              <span
+                class="criteria-avg-score"
+                :style="{ 
+                  color: getRatingColorFromFloat(item.average_score),
+                  textShadow: `0 0 8px ${getRatingColorFromFloat(item.average_score)}40`
+                }"
+              >
+                {{ item.average_score.toFixed(2) }}
               </span>
             </div>
           </div>
@@ -446,6 +508,41 @@ h1 {
 /* Episode Average Rates Grid */
 .episode-avg-rates-section {
   margin-bottom: 32px;
+}
+
+/* Criteria Averages */
+.criteria-averages-section {
+  margin-bottom: 32px;
+}
+.criteria-averages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+.criteria-avg-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  border-left: 4px solid var(--rating-color);
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: all 0.2s ease;
+}
+.criteria-avg-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+.criteria-avg-name {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+.criteria-avg-score {
+  font-weight: 700;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
 }
 .section-title {
   color: var(--text-primary);

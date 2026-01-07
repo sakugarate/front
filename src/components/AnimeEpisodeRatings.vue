@@ -99,7 +99,7 @@ const loadCriteriaAverages = async () => {
   criteriaAveragesLoading.value = true
   criteriaAveragesError.value = null
   try {
-    const url = `${hostUrl}/api/v1/anime/${animeId}/criteria-avg/`
+    const url = `${hostUrl}/api/v1/anime/${userId}/${animeId}/criteria-avg/`
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
